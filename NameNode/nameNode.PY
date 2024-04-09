@@ -107,6 +107,7 @@ def getDNList2(chunks):
         listasDeIPOrdenada[i] = address
         pq.put(priority, address)
         i+=1
+    return listasDeIPOrdenada
 
 
 def getDNList():
@@ -123,7 +124,7 @@ def getDNList():
 @app.route("/upload/<fileName>/<chunks>",methods=["GET"])
 def upload(fileName,chunks):
     try:
-        servers = getDNList()
+        servers = getDNList2(chunks)
         fileOrder[fileName] = (servers,chunks)
         return jsonify({"DataNodes": servers})
     except Exception as e:
