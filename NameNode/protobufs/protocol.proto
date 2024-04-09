@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+service DataNodeService {
+  rpc ListFiles(ListFilesRequest) returns (ListFilesResponse) {}
+}
+
+message ListFilesRequest {
+}
+
+message ListFilesResponse {
+    repeated string file_names = 1;
+}
