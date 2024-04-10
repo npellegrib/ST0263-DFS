@@ -64,7 +64,7 @@ def createStub(address):
 def fileList(address):
     try:
         stub = createStub(address)
-        response = stub.ListFiles()
+        response = stub.ListFiles(protocol_pb2.ListFilesRequest)
 
         if response.fileNames:
             fileListed[address] = response.fileNames
@@ -105,7 +105,7 @@ def getDNList2(chunks):
     while i < chunks:
         priority,address= pq.get()
         listasDeIPOrdenada[i] = address
-        pq.put(priority, address)
+        pq.put(priority+1, address)
         i+=1
     return listasDeIPOrdenada
 
@@ -138,12 +138,18 @@ def archivo_info():
 
     if request.args:
         nombreArchivo = request.args.get('nombre')
-        address = getFileServer()
-        serverOrder = address[0]
-        chunkNumber = address[1]
-        url = "a"
-        respuesta = requests.get(url)
-        return jsonify({"chunks":chunkNumber, "orden":serverOrder, "ruta":respuesta})
+        if nombreArchivo in fileOrder:
+
+            address = getFileServer(nombreArchivo)
+            serverOrder = address[0]
+            chunkNumber = address[1]
+            #url = "a"
+            #respuesta = requests.get(url)
+            return jsonify({"chunks":chunkNumber, "orden":serverOrder})
+        else: 
+            return jsonify({"error":"Archivo no existente"})
+    else: 
+        return jsonify({"error":"No se pidio ningun archivo"})
 
 
 
@@ -152,9 +158,13 @@ def archivo_info():
 if __name__ == "__main__":
     # app.run(port=8080)
     # Se tira el monitoreo del otro servidor por si toca hacer failback
-    monitor_thread = threading.Thread(target=failover)
-    monitor_thread.daemon = True
-    monitor_thread.start()
+    monitorNameNodeThread = threading.Thread(target=failover)
+    monitorNameNodeThread.daemon = True
+    monitorNameNodeThread.start()
+
+    monitorDataNodeThread = threading.Thread(target=healthOfNetwork)
+    monitorDataNodeThread.daemon = True
+    monitorDataNodeThread.start()
     # inicia app de flask
     app.run(host=env("SELF_IP"), port=8080)
 
