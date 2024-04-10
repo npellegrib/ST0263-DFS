@@ -43,6 +43,9 @@ def healthOfNetwork():
     for address in serverAddresses:
         if checkDataNode(address):
             liveDataNodes.append(address)
+        else:
+            if address in liveDataNodes:
+                liveDataNodes.remove(address)
 
 
 
