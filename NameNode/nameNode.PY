@@ -33,8 +33,13 @@ def checkHealth():
         return False
 
 def checkDataNode(address):
+    response = f"http://{address}:5000/heart_beat"
     try:
-        response = f"http://{address}:8080/heart_beat"
+        status= requests.get(response).status_code
+        if status != 200:
+            return False
+        else:
+            return True
         return True
     except:
         return False
@@ -46,6 +51,7 @@ def healthOfNetwork():
         else:
             if address in liveDataNodes:
                 liveDataNodes.remove(address)
+        time.sleep(20)
 
 
 
@@ -61,7 +67,7 @@ def failover():
         time.sleep(15)
 
 def createStub(address):
-    stub = grpc.insecure_channel(address+"50051")
+    stub = grpc.insecure_channel(address+"1036")
     return protocol_pb2_grpc.DataNodeServiceStub(stub)
 
 def fileList(address):
@@ -71,6 +77,7 @@ def fileList(address):
 
         if response.fileNames:
             fileListed[address] = response.fileNames
+            print(fileListed[address])
         else:
             fileListed[address] = []
     except grpc.RpcError as e:
@@ -169,7 +176,7 @@ if __name__ == "__main__":
     monitorDataNodeThread.daemon = True
     monitorDataNodeThread.start()
     # inicia app de flask
-    app.run(host=env("SELF_IP"), port=8080)
+    app.run(host=env("SELF_IP"), port=8080, debug=True)
 
 
 # hace keep alive de los DN, la aprioratizacion con la cantidad de archivos
